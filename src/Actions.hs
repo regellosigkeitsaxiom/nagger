@@ -16,10 +16,10 @@ newNag = do
   putStrLn "First, let's get its tags. Separate them by space."
   tags <- words <$> getLine
   putStrLn "Okay, I got em"
-  putStr "Now describe your nag in your favourite editor"
+  putStr "Now describe your nag in your favorite editor"
   hFlush stdout >> getLine
   action <- editor "/tmp/nag"
-  putStr "Okay, I created a nag. It's default status is \"Active\"."
+  putStrLn "Okay, I created a nag. It's default status is \"Active\"."
   return $ Nag action tags Active
 
 editor :: FilePath -> IO String
@@ -67,12 +67,14 @@ showOneNag nag = do
     'e' -> do
       writeFile "/tmp/nag" $ action nag
       newAction <- editor "/tmp/nag"
-      putStrLn "But be still patient: I will save only on clean exit"
+      putStrLn "Nagging object updated"
+      putStrLn "But be still patient: I will save only on clean exit\n"
       return $ nag { action = newAction }
     't' -> do
       putStrLn "Okay, enter new tags (old ones will be discarded)"
       newTags <- hFlush stdout >> getLine
-      putStrLn "But be still patient: I will save only on clean exit"
+      putStrLn "Okay, I updated tags of your nag"
+      putStrLn "But be still patient: I will save only on clean exit\n"
       return $ nag { tags = words newTags }
     'a' -> do
       putStrLn "Nag status set to Active"
