@@ -78,15 +78,19 @@ showOneNag nag = do
       return $ nag { tags = words newTags }
     'a' -> do
       putStrLn "Nag status set to Active"
+      putStrLn "But be still patient: I will save only on clean exit\n"
       return $ nag { status = Active }
     'c' -> do
       putStrLn "Nag status set to Complete"
+      putStrLn "But be still patient: I will save only on clean exit\n"
       return $ nag { status = Complete }
     'q' -> do
       putStrLn "Nag status set to Queued"
+      putStrLn "But be still patient: I will save only on clean exit\n"
       return $ nag { status = Queued }
     'x' -> do
       putStrLn "Nag status set to Cancelled"
+      putStrLn "But be still patient: I will save only on clean exit\n"
       return $ nag { status = Cancelled }
     ___ -> return nag
   where
@@ -115,7 +119,10 @@ shuf list = do
 showNagsByTags :: [ String ] -> IO ()
 showNagsByTags tgs = do
   allNags <- readNags
-  goodNags <- shuf $ filter (\nag -> tags nag `intersect` tgs /= [] ) allNags
+  let goodTags = filter (\t -> head t /= '-' ) tgs
+  let badTags = map tail $ tgs \\ goodTags
+  let reallyGoodTags = if goodTags == [] then ( nub $ allNags >>= tags ) \\ badTags else goodTags
+  goodNags <- shuf $ filter (\nag -> tags nag `intersect` reallyGoodTags /= [] && tags nag `intersect` badTags == [] ) allNags
   let badNags = allNags \\ goodNags
   newNags <- mapM showOneNag goodNags
   writeNags $ badNags ++ newNags
