@@ -106,7 +106,7 @@ showTags = do
 showNags :: [ Status ] -> IO ()
 showNags sts = do
   allNags <- readNags
-  goodNags <- shuf $ filter (\nag -> status nag `elem` sts) allNags
+  goodNags <- shuf $ [ nag | nag <- allNags, status nag `elem` sts ]
   let badNags = allNags \\ goodNags
   newNags <- mapM showOneNag goodNags
   writeNags $ newNags ++ badNags
@@ -121,11 +121,15 @@ showNagsByTags tgs = do
   allNags <- readNags
   let goodTags = filter (\t -> head t /= '-' ) tgs
   let badTags = map tail $ tgs \\ goodTags
-  let reallyGoodTags = if goodTags == [] then ( nub $ allNags >>= tags ) \\ badTags else goodTags
-  goodNags <- shuf $ filter (\nag -> tags nag `intersect` reallyGoodTags /= []
-                             && tags nag `intersect` badTags == []
-                             && status nag `elem` [ Active, Queued ]
-                            ) allNags
+  let reallyGoodTags =
+        if goodTags == []
+        then ( nub $ allNags >>= tags ) \\ badTags
+        else goodTags
+  goodNags <- shuf $ [ nag | nag <- allNags
+                           , tags nag `intersect` reallyGoodTags /= []
+                           , tags nag `intersect` badTags == []
+                           , status nag `elem` [ Active, Queued ]
+                           ]
   let badNags = allNags \\ goodNags
   newNags <- mapM showOneNag goodNags
   writeNags $ badNags ++ newNags
