@@ -90,6 +90,11 @@ showOneNag nag = do
   dropTails s | s /= "" && last s == '\n' = dropTails $ init s
               | otherwise = s
 
+showTags :: IO ()
+showTags = do
+  allNags <- readNags
+  mapM_ putStrLn $ nub $ allNags >>= tags
+
 showNags :: [ Status ] -> IO ()
 showNags sts = do
   allNags <- readNags
@@ -97,3 +102,11 @@ showNags sts = do
   let badNags = allNags \\ goodNags
   newNags <- mapM showOneNag goodNags
   writeNags $ newNags ++ badNags
+
+showNagsByTags :: [ String ] -> IO ()
+showNagsByTags tgs = do
+  allNags <- readNags
+  let goodNags = filter (\nag -> tags nag `intersect` tgs /= [] ) allNags
+  let badNags = allNags \\ goodNags
+  newNags <- mapM showOneNag goodNags
+  writeNags $ badNags ++ newNags

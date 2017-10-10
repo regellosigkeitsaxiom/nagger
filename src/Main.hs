@@ -14,6 +14,8 @@ main = do
     [ "cancelled" ] -> showNags [ Cancelled ]
     [ "queued" ] -> showNags [ Queued ]
     [ "all" ] -> showNags [ Active, Queued, Complete, Cancelled ]
+    [ "tags" ] -> showTags
+    ( "tag":rest ) -> showNagsByTags rest
     [ ] -> showNags [ Active, Queued ]
     _ -> do
       putStrLn "nagger add"
@@ -22,4 +24,6 @@ main = do
       putStrLn "nagger cancelled"
       putStrLn "nagger queued"
       putStrLn "nagger all"
-      putStrLn "nagger"
+      putStrLn "nagger tags"
+      putStrLn "nagger tag <tagnames>"
+      putStrLn "nagger (active+queued)"
