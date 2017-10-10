@@ -25,3 +25,5 @@ executable nag
                      , process
                      , directory
                      , rainbow
+                     , random
+                     , random-shuffle

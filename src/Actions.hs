@@ -7,11 +7,12 @@ import System.IO
 import Data.Yaml
 import Rainbow
 import Data.List
+import System.Random
+import System.Random.Shuffle
 
 newNag :: IO Nag
 newNag = do
-  putStr "Okay, we're up to create a new nag"
-  hFlush stdout >> getLine
+  putStrLn "Okay, we're up to create a new nag"
   putStrLn "First, let's get its tags. Separate them by space."
   tags <- words <$> getLine
   putStrLn "Okay, I got em"
@@ -19,7 +20,6 @@ newNag = do
   hFlush stdout >> getLine
   action <- editor "/tmp/nag"
   putStr "Okay, I created a nag. It's default status is \"Active\"."
-  hFlush stdout >> getLine
   return $ Nag action tags Active
 
 editor :: FilePath -> IO String
@@ -55,8 +55,8 @@ addNag = do
 
 showOneNag :: Nag -> IO Nag
 showOneNag nag = do
-  putStrLn "[e]dit | [t]ags | [a]ctive | [c]omplete | [q]ueue | [x]cancel"
-  putStrLn "-------------------------------------------------------------"
+  putChunkLn $ bold $ chunk "[e]dit | [t]ags | [a]ctive | [c]omplete | [q]ueue | [x]cancel" & fore black
+  putChunkLn $ bold $ chunk "-------------------------------------------------------------" & fore black
   putStrLn $ dropTails $ action nag
   putChunkLn $ bold $ chunk ( unwords $ tags nag ) & fore yellow
   putChunkLn $ bold $ chunk ( show $ status nag ) & fore red
@@ -67,10 +67,12 @@ showOneNag nag = do
     'e' -> do
       writeFile "/tmp/nag" $ action nag
       newAction <- editor "/tmp/nag"
+      putStrLn "But be still patient: I will save only on clean exit"
       return $ nag { action = newAction }
     't' -> do
       putStrLn "Okay, enter new tags (old ones will be discarded)"
       newTags <- hFlush stdout >> getLine
+      putStrLn "But be still patient: I will save only on clean exit"
       return $ nag { tags = words newTags }
     'a' -> do
       putStrLn "Nag status set to Active"
@@ -98,15 +100,20 @@ showTags = do
 showNags :: [ Status ] -> IO ()
 showNags sts = do
   allNags <- readNags
-  let goodNags = filter (\nag -> status nag `elem` sts) allNags
+  goodNags <- shuf $ filter (\nag -> status nag `elem` sts) allNags
   let badNags = allNags \\ goodNags
   newNags <- mapM showOneNag goodNags
   writeNags $ newNags ++ badNags
 
+shuf :: [ a ] -> IO [ a ]
+shuf list = do
+  g <- newStdGen
+  return $ shuffle' list ( length list ) g
+
 showNagsByTags :: [ String ] -> IO ()
 showNagsByTags tgs = do
   allNags <- readNags
-  let goodNags = filter (\nag -> tags nag `intersect` tgs /= [] ) allNags
+  goodNags <- shuf $ filter (\nag -> tags nag `intersect` tgs /= [] ) allNags
   let badNags = allNags \\ goodNags
   newNags <- mapM showOneNag goodNags
   writeNags $ badNags ++ newNags

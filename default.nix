@@ -5,7 +5,7 @@ let
   inherit (nixpkgs) pkgs;
 
   f = { mkDerivation, aeson, base, directory, process, rainbow
-      , stdenv, yaml
+      , random, random-shuffle, stdenv, yaml
       }:
       mkDerivation {
         pname = "nagger";
@@ -14,7 +14,7 @@ let
         isLibrary = false;
         isExecutable = true;
         executableHaskellDepends = [
-          aeson base directory process rainbow yaml
+          aeson base directory process rainbow random random-shuffle yaml
         ];
         homepage = "https://github.com/regellosigkeitsaxiom/nagger#readme";
         license = stdenv.lib.licenses.bsd3;
